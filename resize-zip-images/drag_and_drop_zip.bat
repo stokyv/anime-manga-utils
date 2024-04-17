@@ -4,7 +4,6 @@ rem Check if a file was dropped
 if "%~1" == "" goto end
 
 rem Run the Python script
-@REM py "D:\Google Drive\shared-files\python-resize-zip\script.py" "%~1"
 py "script.py" "%~1"
 
 
