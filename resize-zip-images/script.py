@@ -5,15 +5,18 @@ from PIL import Image
 import shutil
 
 def extract_zip(zip_file_path):
+    """
+    Extract zip file to a folder with the same name
+    """
     output_dir = os.path.splitext(zip_file_path)[0]
     with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
         zip_ref.extractall(output_dir)
     return output_dir
 
-def resize_images(directory):
+def resize_images(directory, target_width=1280):
     """
-    Resizes all images in the specified directory that have a width greater than 1280 pixels.
-    The images are resized to a width of 1280 pixels while maintaining the original aspect ratio.
+    Resizes all images in the specified directory that have a width greater than the target width
+    The images are resized to the target width while maintaining the original aspect ratio.
     """
     for filename in os.listdir(directory):
         if filename.endswith(".jpg") or filename.endswith(".png") or filename.endswith('.jpeg'):
@@ -21,8 +24,8 @@ def resize_images(directory):
             image = Image.open(file_path)
             width, height = image.size
             
-            if width > 1280:
-                new_width = 1280
+            if width > target_width:
+                new_width = target_width
                 new_height = int(height * (new_width / width))
                 resized_image = image.resize((new_width, new_height), resample=Image.LANCZOS)
                 resized_image.save(file_path)
@@ -30,13 +33,14 @@ def resize_images(directory):
             else:
                 print(f"Skipped {filename}")
 
-def zip_folder(directory):
+def zip_folder(directory, suffix="-1280x"):
     """
     Creates a zip file containing all the files in the specified directory,
-    with the name "{directory}-1280x.zip". The files will be extracted to the root
-    folder when the zip file is extracted.
+    with the name "{directory}{suffix}.zip". 
+    The files will be extracted to the root folder when the zip file is extracted.
     """
-    zip_filename = f"{directory}-1280x.zip"
+    zip_filename = f"{directory}{suffix}.zip"
+    # zip_filename = f"{directory}-1280x.zip"
     with zipfile.ZipFile(zip_filename, 'w') as zip_file:
         for root, dirs, files in os.walk(directory):
             for file in files:
@@ -71,14 +75,9 @@ def find_files_with_extensions(folder_path, extensions):
         list: List of file paths that match the specified extensions.
     """
     matching_files = []
-
-    matching_files = []
     for filename in os.listdir('.'):
         if any(filename.lower().endswith(ext.lower()) for ext in extensions):
-        # if filename.endswith(".zip"):
-            # print(filename)
             matching_files.append(filename)
-
     return matching_files
 
 # folder_path = '.'
@@ -100,11 +99,7 @@ def process_one_zip(zip_file_path):
 def main():
     if len(sys.argv) > 1:
         zip_file_path = sys.argv[1]
-        output_dir = extract_zip(zip_file_path)
-        print(f"Zip file extracted to {output_dir}")
-        resize_images(output_dir)
-        zip_folder(output_dir)
-        remove_folder(output_dir)
+        process_one_zip(zip_file_path)
     else:
         print("Finding all zip/rar/cbz files in the current folder...")
         zip_files = find_zip_files()
